@@ -107,9 +107,7 @@ void button2Pressed() {
       currentTopicIndex = topics.size() - 1;
     }
   }
-
   Serial.println("Removed Client from Controller")
-
 }
 
 //Button3: Change selected topic
@@ -118,9 +116,7 @@ void button3Pressed() {
   if (currentTopicIndex >= topics.size()) {
     currentTopicIndex = 0;
   }
-
   Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str())
-
 }
 
 void button4Pressed() {
@@ -153,7 +149,6 @@ void callback(char *topic, byte *payload, unsigned int length){
       str += byteArray[i];
   }
   Serial.println(str);
-
   //Adding client to array
   topics.push_back(str);
 }
