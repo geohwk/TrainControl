@@ -13,17 +13,14 @@ const int mqtt_port = 1883;
 const char* brokerUser = "";  // exp: myemail@mail.com
 const char* brokerPass = "";
 
-// Default MQTT topic
-String defaultTopic = "train1";
-
 // MQTT topics
 std::vector<String> topics;
 int currentTopicIndex = 0; // Index of the currently selected topic
 
 // GPIO pins for buttons
-const int button1Pin = D1;
-const int button2Pin = D2;
-const int button3Pin = D3;
+const int button1Pin = D1; 
+const int button2Pin = D2; //Remove client from list
+const int button3Pin = D3; //Change selected client
 const int button4Pin = D4;
 const int button5Pin = D5;
 const int button6Pin = D6;
@@ -58,8 +55,10 @@ void setup()
     pinMode(button5Pin, INPUT_PULLUP);
     pinMode(button6Pin, INPUT_PULLUP);
 
+    // Connect to Pi Access Point
     connectToWiFi();
     
+    //Connect to MQTT broker
     client.setServer(mqtt_broker, mqtt_port);
     client.setCallback(callback);
 
@@ -75,9 +74,7 @@ void setup()
           delay(2000);
       }
     }
-
     client.subscribe("newClient");
-
 }
 
 void connectToWiFi() {
@@ -101,7 +98,7 @@ void button1Pressed() {
     topics.push_back("train" + String(topics.size() + 1));
   }
 }
-
+*/
 //Button2: Remove currently selected topic from the list
 void button2Pressed() {
   if (!topics.empty()) {
@@ -110,14 +107,20 @@ void button2Pressed() {
       currentTopicIndex = topics.size() - 1;
     }
   }
+
+  Serial.println("Removed Client from Controller")
+
 }
-*/
+
 //Button3: Change selected topic
 void button3Pressed() {
   currentTopicIndex++;
   if (currentTopicIndex >= topics.size()) {
     currentTopicIndex = 0;
   }
+
+  Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str())
+
 }
 
 void button4Pressed() {
@@ -142,13 +145,16 @@ void readSpeed(){
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
 }
 
+//New Client connected
 void callback(char *topic, byte *payload, unsigned int length){
-  Serial.print("New Client Added to network:");
+  Serial.println("New Client Added to network:");
   String str;
   for (int i = 0; i < length; i++) {
       str += byteArray[i];
   }
   Serial.println(str);
+
+  //Adding client to array
   topics.push_back(str);
 }
 
