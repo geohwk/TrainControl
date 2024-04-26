@@ -18,11 +18,11 @@ int currentTopicIndex = 0; // Index of the currently selected topic
 
 // GPIO pins for buttons
 
-const int removePin = D2; //Remove client from list
-const int swapPin = D3; //Change selected client
-const int rfPin = D4;
-const int light1Pin = D5;
-const int light2Pin = D6;
+const int removePin = 14; //D5 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
+const int swapPin = 12; //D6
+const int rfPin = 13; //D7
+const int light1Pin = 3; //RX
+const int light2Pin = 16; //D0
 
 // Potentiometer pin
 const int potentiometerPin = A0;
@@ -160,7 +160,7 @@ void loop()
     //Swap Selected Entry
     swapEntry();
   }
-  
+
   //Lights
   if (digitalRead(light1Pin) == HIGH) && (lights1State == false) {
     lights1On();
