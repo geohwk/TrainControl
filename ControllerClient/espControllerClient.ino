@@ -1,4 +1,3 @@
-#include <DRV8833.h>
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include <vector>
@@ -18,12 +17,12 @@ std::vector<String> topics;
 int currentTopicIndex = 0; // Index of the currently selected topic
 
 // GPIO pins for buttons
-const int button1Pin = D1; 
-const int button2Pin = D2; //Remove client from list
-const int button3Pin = D3; //Change selected client
-const int button4Pin = D4;
-const int button5Pin = D5;
-const int button6Pin = D6;
+
+const int removePin = D2; //Remove client from list
+const int swapPin = D3; //Change selected client
+const int rfPin = D4;
+const int light1Pin = D5;
+const int light2Pin = D6;
 
 // Potentiometer pin
 const int potentiometerPin = A0;
@@ -32,28 +31,22 @@ const int potentiometerPin = A0;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-// Function prototypes
-void connectToWiFi();
-void reconnect();
-void button1Pressed();
-void button2Pressed();
-void button3Pressed();
-void button4Pressed();
-void button5Pressed();
-void button6Pressed();
-void callback();
+//Switch States
+bool RFcurrentState = false;
+bool lights1State = false;
+bool lights2State = false;
 
 void setup() 
 {
     Serial.begin(115200);
 
     // Initialize buttons as inputs
-    pinMode(button1Pin, INPUT_PULLUP);
-    pinMode(button2Pin, INPUT_PULLUP);
-    pinMode(button3Pin, INPUT_PULLUP);
-    pinMode(button4Pin, INPUT_PULLUP);
-    pinMode(button5Pin, INPUT_PULLUP);
-    pinMode(button6Pin, INPUT_PULLUP);
+    pinMode(removePin, INPUT);
+    pinMode(swapPin, INPUT);
+    pinMode(rfPin, INPUT);
+    pinMode(rfPin, INPUT);
+    pinMode(light1Pin, INPUT);
+    pinMode(light2Pin, INPUT);
 
     // Connect to Pi Access Point
     connectToWiFi();
@@ -90,55 +83,56 @@ void connectToWiFi() {
   }
 }
 
-// Button action functions
-
-/*Button1: Adds another train topic to the list
-void button1Pressed() {
-  if (topics.size() < 10) { // Limit the number of topics to 10
-    topics.push_back("train" + String(topics.size() + 1));
-  }
-}
-*/
-//Button2: Remove currently selected topic from the list
-void button2Pressed() {
+void removeEntry() {
   if (!topics.empty()) {
     topics.erase(topics.begin() + currentTopicIndex);
     if (currentTopicIndex >= topics.size()) {
       currentTopicIndex = topics.size() - 1;
     }
   }
-  Serial.println("Removed Client from Controller")
+  Serial.println("Removed Client from Controller");
 }
 
-//Button3: Change selected topic
-void button3Pressed() {
+void swapEntry() {
   currentTopicIndex++;
   if (currentTopicIndex >= topics.size()) {
     currentTopicIndex = 0;
   }
-  Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str())
+  Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str());
 }
 
-void button4Pressed() {
-  // Action for Button 4
+void setToForward() {
+  Serial.println("Train command: Forward");
 }
 
-void button5Pressed() {
-  // Action for Button 5
+void setToReverse() {
+  Serial.println("Train command: Reverse");
 }
 
-void button6Pressed() {
-  // Action for Button 6
+void lights1On(){
+  Serial.println("Train command: Lights 1 On");
 }
+
+void lights1Off(){
+  Serial.println("Train command: Lights 1 Off");
+}
+
+void lights2On(){
+  Serial.println("Train command: Lights 2 On");
+}
+
+void lights2Off(){
+  Serial.println("Train command: Lights 2 Off");
+}
+
 
 void readSpeed(){
-  // Read potentiometer value
   int potValue = analogRead(potentiometerPin);
-  
-  int speedValue = (potValue/1023)*100;
+  float speedValue = (potValue/1023)*100;
+  Serial.println(speedValue);
 
   // Publish potentiometer value to the currently selected speed subtopic
-  client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
+  //client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
 }
 
 //New Client connected
@@ -160,29 +154,41 @@ void loop()
   readSpeed();
 
   // Check button presses and perform corresponding actions
-  if (digitalRead(button1Pin) == LOW) {
-    button1Pressed();
-    delay(100); // Debounce delay
+  if (digitalRead(removePin) == HIGH) {
+    //Remove Entry
+    removeEntry();
   }
-  if (digitalRead(button2Pin) == LOW) {
-    button2Pressed();
-    delay(100); // Debounce delay
+  if (digitalRead(swapPin) == HIGH) {
+    //Swap Selected Entry
+    swapEntry();
   }
-  if (digitalRead(button3Pin) == LOW) {
-    button3Pressed();
-    delay(100); // Debounce delay
+  if (digitalRead(rfPin) == HIGH) && (RFcurrentState == false) {
+    //Reverse-Forward
+    setToForward();
+    RFcurrentState = HIGH
   }
-  if (digitalRead(button4Pin) == LOW) {
-    button4Pressed();
-    delay(100); // Debounce delay
+  if (digitalRead(rfPin) == LOW) && (RFcurrentState == true) {
+    //Reverse-Forward
+    setToReverse();
+    RFcurrentState = LOW
   }
-  if (digitalRead(button5Pin) == LOW) {
-    button5Pressed();
-    delay(100); // Debounce delay
+
+  //Lights
+  if (digitalRead(light1Pin) == HIGH) && (lights1State == false) {
+    lights1On();
+    lights1State = true
   }
-  if (digitalRead(button6Pin) == LOW) {
-    button6Pressed();
-    delay(100); // Debounce delay
+  if (digitalRead(light1Pin) == LOW) && (lights1State == true){
+    lights1Off();
+    lights1State = false
+  }
+  if (digitalRead(light2Pin) == HIGH) && (lights2State == false){
+    lights2On();
+    lights2State = true
+  }
+  if (digitalRead(light2Pin) == LOW) && (lights2State == true){
+    lights2Off();
+    lights2State = false
   }
 
 }
