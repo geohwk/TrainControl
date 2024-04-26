@@ -5,17 +5,17 @@
 
 DRV8833 driver = DRV8833();
 
+const char * clientName = "testTrain"
+
 // WiFi credentials
 const char * wifi_ssid = "TrainControl";
 const char * wifi_password = "ringousel";
-
 
 //const int inputA1 = 5, inputA2 = 4;//d4, d5
 const int inputA1 = 2, inputA2 = 14;
 
 const char* brokerUser = "";  // exp: myemail@mail.com
 const char* brokerPass = "";
-const char* topic = "train1/trainSpeed";
 const char* mqtt_broker = "192.168.1.7";
 const int mqtt_port = 1883;
 WiFiClient espClient;
@@ -25,7 +25,6 @@ void setup()
 {
     Serial.begin(115200);
 
-
     pinMode(2,OUTPUT);
     pinMode(14,OUTPUT);
     //pinMode(5,OUTPUT);
@@ -34,7 +33,6 @@ void setup()
     digitalWrite(15, LOW);
     connectToWiFi();
     
-
     client.setServer(mqtt_broker, mqtt_port);
     client.setCallback(callback);
 
@@ -51,14 +49,13 @@ void setup()
       }
     }
     // publish and subscribe
-    client.publish("newClient", "testTrain");
-    
-    client.subscribe("train1/lights");
+    client.publish("newClient", clientName);
+
+    client.subscribe(clientName + "/lights");
+    client.subscribe(clientName + "/speed");
     
     // Attach the motors to the input pins:
     driver.attachMotorA(inputA1, inputA2);
-    
-
 }
 
 void connectToWiFi() {
@@ -85,7 +82,6 @@ void callback(char *topic, byte *payload, unsigned int length)
       Serial.print((char) payload[i]);
       pwmValue_str = pwmValue_str += payload[i];
   }
-  Serial.println();
   Serial.println("-----------------------");
 
   payload[length] = '\0';
@@ -93,17 +89,15 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   String topicString = String(topic);
 
-  if(topicString == "train1/trainSpeed")
+  if(topicString == (clientName + "/speed"))
   {
     controlSpeed(pwmVal);
   }
-  else if(topicString == "train1/lights")
+  else if(topicString == (clientName + "/lights"))
   {
     controlLights(pwmVal);
   }
 }
-
-
 
 void controlSpeed(int pwmVal)
 {
