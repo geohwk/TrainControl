@@ -104,14 +104,6 @@ void swapEntry() {
   Serial.println("Swap Entry");
 }
 
-void setToForward() {
-  Serial.println("Train command: Forward");
-}
-
-void setToReverse() {
-  Serial.println("Train command: Reverse");
-}
-
 void lights1On(){
   Serial.println("Train command: Lights 1 On");
 }
@@ -133,9 +125,12 @@ void readSpeed(){
   int potValue = analogRead(potentiometerPin);
   float speedValue = (potValue/1023)*100;
   Serial.println(speedValue);
-
+  if(digitalRead(rfPin) == HIGH){
+    speedValue = (speedValue*-1)
+  }
+    
   // Publish potentiometer value to the currently selected speed subtopic
-  //client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
+  client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
 }
 
 //New Client connected
@@ -165,17 +160,7 @@ void loop()
     //Swap Selected Entry
     swapEntry();
   }
-  if (digitalRead(rfPin) == HIGH) && (RFcurrentState == false) {
-    //Reverse-Forward
-    setToForward();
-    RFcurrentState = HIGH
-  }
-  if (digitalRead(rfPin) == LOW) && (RFcurrentState == true) {
-    //Reverse-Forward
-    setToReverse();
-    RFcurrentState = LOW
-  }
-
+  
   //Lights
   if (digitalRead(light1Pin) == HIGH) && (lights1State == false) {
     lights1On();
