@@ -40,6 +40,9 @@ void setup()
 {
     Serial.begin(115200);
 
+    // Connect to Pi Access Point
+    connectToWiFi();
+
     // Initialize buttons as inputs
     pinMode(removePin, INPUT);
     pinMode(swapPin, INPUT);
@@ -48,9 +51,6 @@ void setup()
     pinMode(light1Pin, INPUT);
     pinMode(light2Pin, INPUT);
 
-    // Connect to Pi Access Point
-    connectToWiFi();
-    
     //Connect to MQTT broker
     client.setServer(mqtt_broker, mqtt_port);
     client.setCallback(callback);
@@ -84,21 +84,24 @@ void connectToWiFi() {
 }
 
 void removeEntry() {
-  if (!topics.empty()) {
+  /*if (!topics.empty()) {
     topics.erase(topics.begin() + currentTopicIndex);
     if (currentTopicIndex >= topics.size()) {
       currentTopicIndex = topics.size() - 1;
     }
-  }
+  }*/
   Serial.println("Removed Client from Controller");
 }
 
 void swapEntry() {
+  /*
   currentTopicIndex++;
   if (currentTopicIndex >= topics.size()) {
     currentTopicIndex = 0;
   }
   Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str());
+  */
+  Serial.println("Swap Entry");
 }
 
 void setToForward() {

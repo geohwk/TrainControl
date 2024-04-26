@@ -51,8 +51,8 @@ void setup()
       }
     }
     // publish and subscribe
-    client.publish(topic, "hello emqx");
-    client.subscribe(topic);
+    client.publish("newClient", "testTrain");
+    
     client.subscribe("train1/lights");
     
     // Attach the motors to the input pins:
