@@ -47,7 +47,6 @@ void setup()
     pinMode(removePin, INPUT);
     pinMode(swapPin, INPUT);
     pinMode(rfPin, INPUT);
-    pinMode(rfPin, INPUT);
     pinMode(light1Pin, INPUT);
     pinMode(light2Pin, INPUT);
 
