@@ -75,14 +75,12 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
   Serial.print("Message arrived in topic: ");
   Serial.println(topic);
-  Serial.print("Message:");
   String pwmValue_str = "";
   for (int i = 0; i < length; i++) 
   {
       Serial.print((char) payload[i]);
       pwmValue_str = pwmValue_str += payload[i];
   }
-  Serial.println("-----------------------");
 
   payload[length] = '\0';
   int pwmVal = atoi((char *)payload);
