@@ -35,7 +35,7 @@ PubSubClient client(espClient);
 bool RFcurrentState = false;
 bool lights1State = false;
 bool lights2State = false;
-
+float currentSpeed = 0;
 void setup() 
 {
     Serial.begin(115200);
@@ -122,14 +122,21 @@ void lights2Off(){
 
 void readSpeed(){
   int potValue = analogRead(potentiometerPin);
+
+  if(abs(potValue-currentSpeed)<5){
+    return;
+  }
+  currentSpeed = potValue;
   float speedValue = (potValue/1023)*100;
-  Serial.println(speedValue);
+
   if(digitalRead(rfPin) == HIGH){
     speedValue = (speedValue*-1)
   }
     
+   
+  Serial.println(speedValue);
   // Publish potentiometer value to the currently selected speed subtopic
-  client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
+  //client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
 }
 
 //New Client connected
@@ -144,38 +151,49 @@ void callback(char *topic, byte *payload, unsigned int length){
   topics.push_back(str);
 }
 
+int count=0;
+
 void loop() 
 {
   client.loop();
-
-  readSpeed();
+  if(count>10000){
+    readSpeed();
+    count=0;
+  }
+  count++;
 
   // Check button presses and perform corresponding actions
   if (digitalRead(removePin) == HIGH) {
     //Remove Entry
     removeEntry();
+    delay(200);
   }
   if (digitalRead(swapPin) == HIGH) {
     //Swap Selected Entry
     swapEntry();
+    delay(200);
   }
 
   //Lights
   if (digitalRead(light1Pin) == HIGH) && (lights1State == false) {
     lights1On();
     lights1State = true
+    delay(200);
   }
   if (digitalRead(light1Pin) == LOW) && (lights1State == true){
     lights1Off();
     lights1State = false
+    delay(200);
   }
   if (digitalRead(light2Pin) == HIGH) && (lights2State == false){
     lights2On();
     lights2State = true
+    delay(200);
   }
   if (digitalRead(light2Pin) == LOW) && (lights2State == true){
     lights2Off();
     lights2State = false
+    delay(200);
   }
 
 }
