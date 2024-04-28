@@ -2,21 +2,22 @@
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include <vector>
+#include <string>
 
 DRV8833 driver = DRV8833();
 
-const char * clientName = "testTrain"
+char clientName[] = "testTrain"
 
 // WiFi credentials
-const char * wifi_ssid = "TrainControl";
-const char * wifi_password = "ringousel";
+char wifi_ssid[] = "TrainControl";
+char wifi_password[] = "ringousel";
 
 //const int inputA1 = 5, inputA2 = 4;//d4, d5
 const int inputA1 = 2, inputA2 = 14;
 
-const char* brokerUser = "";  // exp: myemail@mail.com
-const char* brokerPass = "";
-const char* mqtt_broker = "192.168.1.7";
+char brokerUser[] = "";  // exp: myemail@mail.com
+char brokerPass[] = "";
+char mqtt_broker[] = "192.168.1.7";
 const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -51,8 +52,14 @@ void setup()
     // publish and subscribe
     client.publish("newClient", clientName);
 
-    client.subscribe(clientName + "/lights");
-    client.subscribe(clientName + "/speed");
+    light1Topic = strcat(clientName, "/lights1")
+    light2Topic = strcat(clientName, "/lights2")
+    speedTopic = strcat(clientName, "/speed")
+
+
+    client.subscribe(light1Topic);
+    client.subscribe(light2Topic);
+    client.subscribe(speedTopic);
     
     // Attach the motors to the input pins:
     driver.attachMotorA(inputA1, inputA2);
@@ -87,11 +94,11 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   String topicString = String(topic);
 
-  if(topicString == (clientName + "/speed"))
+  if(topicString == (strcat(clientName, "/speed")))
   {
     controlSpeed(pwmVal);
   }
-  else if(topicString == (clientName + "/lights"))
+  else if(topicString == (strcat(clientName, "/lights1")))
   {
     controlLights(pwmVal);
   }

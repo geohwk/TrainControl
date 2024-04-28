@@ -1,16 +1,17 @@
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
 #include <vector>
+#include <string>
 
 // WiFi credentials
-const char * wifi_ssid = "TrainControl";
-const char * wifi_password = "ringousel";
+char wifi_ssid[] = "TrainControl";
+char wifi_password[] = "ringousel";
 
 //MQTT Broker
-const char* mqtt_broker = "192.168.1.7";
+char mqtt_broker[] = "192.168.1.7";
 const int mqtt_port = 1883;
-const char* brokerUser = "";  // exp: myemail@mail.com
-const char* brokerPass = "";
+char brokerUser[] = "";  // exp: myemail@mail.com
+char brokerPass[] = "";
 
 // MQTT topics
 std::vector<String> topics;
@@ -136,19 +137,19 @@ void readSpeed(){
    
   Serial.println(speedValue);
   // Publish potentiometer value to the currently selected speed subtopic
-  //client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
+  client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
 }
 
 //New Client connected
 void callback(char *topic, byte *payload, unsigned int length){
   Serial.println("New Client Added to network:");
-  String str;
+  char clientName[length];
   for (int i = 0; i < length; i++) {
-      str += byteArray[i];
+      clientName[i] = byteArray[i];
   }
-  Serial.println(str);
+  Serial.println(clientName);
   //Adding client to array
-  topics.push_back(str);
+  topics.push_back(clientName);
 }
 
 int count=0;
@@ -157,7 +158,9 @@ void loop()
 {
   client.loop();
   if(count>10000){
-    readSpeed();
+    if(topicString.size()>0){
+      readSpeed();
+    }
     count=0;
   }
   count++;
