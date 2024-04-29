@@ -22,7 +22,7 @@ int currentTopicIndex = 0; // Index of the currently selected topic
 const int removePin = 14; //D5 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
 const int swapPin = 12; //D6
 const int rfPin = 13; //D7
-const int light1Pin = 3; //RX
+const int light1Pin = 15; //RX
 const int light2Pin = 16; //D0
 
 // Potentiometer pin
@@ -106,10 +106,12 @@ void swapEntry() {
 
 void lights1On(){
   Serial.println("Train command: Lights 1 On");
+  client.publish((topics[currentTopicIndex] + "/lights1").c_str(), String("1").c_str());
 }
 
 void lights1Off(){
   Serial.println("Train command: Lights 1 Off");
+  client.publish((topics[currentTopicIndex] + "/lights1").c_str(), String("0").c_str());
 }
 
 void lights2On(){
@@ -122,7 +124,7 @@ void lights2Off(){
 
 
 void readSpeed(){
-  int potValue = analogRead(potentiometerPin);
+  float potValue = analogRead(potentiometerPin);
 
   if(abs(potValue-currentSpeed)<5){
     return;
@@ -131,7 +133,7 @@ void readSpeed(){
   float speedValue = (potValue/1023)*100;
 
   if(digitalRead(rfPin) == HIGH){
-    speedValue = (speedValue*-1)
+    speedValue = (speedValue*-1);
   }
     
    
@@ -143,10 +145,14 @@ void readSpeed(){
 //New Client connected
 void callback(char *topic, byte *payload, unsigned int length){
   Serial.println("New Client Added to network:");
-  char clientName[length];
-  for (int i = 0; i < length; i++) {
-      clientName[i] = byteArray[i];
-  }
+  
+  //for (int i = 0; i < length; i++) {
+  //    clientName = clientName += payload[i];
+  //}
+  payload[length] = '\0';
+  String clientName = (char *)payload;
+  
+  
   Serial.println(clientName);
   //Adding client to array
   topics.push_back(clientName);
@@ -158,7 +164,7 @@ void loop()
 {
   client.loop();
   if(count>10000){
-    if(topicString.size()>0){
+    if(topics.size()>0){
       readSpeed();
     }
     count=0;
@@ -178,24 +184,24 @@ void loop()
   }
 
   //Lights
-  if (digitalRead(light1Pin) == HIGH) && (lights1State == false) {
+  if ((digitalRead(light1Pin) == HIGH) && (lights1State == false)) {
     lights1On();
-    lights1State = true
+    lights1State = true;
     delay(200);
   }
-  if (digitalRead(light1Pin) == LOW) && (lights1State == true){
+  if ((digitalRead(light1Pin) == LOW) && (lights1State == true)){
     lights1Off();
-    lights1State = false
+    lights1State = false;
     delay(200);
   }
-  if (digitalRead(light2Pin) == HIGH) && (lights2State == false){
+  if ((digitalRead(light2Pin) == HIGH) && (lights2State == false)){
     lights2On();
-    lights2State = true
+    lights2State = true;
     delay(200);
   }
-  if (digitalRead(light2Pin) == LOW) && (lights2State == true){
+  if ((digitalRead(light2Pin) == LOW) && (lights2State == true)){
     lights2Off();
-    lights2State = false
+    lights2State = false;
     delay(200);
   }
 

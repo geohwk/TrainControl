@@ -6,7 +6,7 @@
 
 DRV8833 driver = DRV8833();
 
-char clientName[] = "testTrain"
+String clientName = "testTrain";
 
 // WiFi credentials
 char wifi_ssid[] = "TrainControl";
@@ -21,6 +21,10 @@ char mqtt_broker[] = "192.168.1.7";
 const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+String light1Topic;
+String light2Topic;
+String speedTopic;
 
 void setup() 
 {
@@ -50,17 +54,24 @@ void setup()
       }
     }
     // publish and subscribe
-    client.publish("newClient", clientName);
+    client.publish("newClient", clientName.c_str());
+    light1Topic = clientName + "/lights1";
+    light2Topic = clientName + "/lights2";
+    speedTopic = clientName + "/speed";
 
-    light1Topic = strcat(clientName, "/lights1")
-    light2Topic = strcat(clientName, "/lights2")
-    speedTopic = strcat(clientName, "/speed")
-
-
-    client.subscribe(light1Topic);
-    client.subscribe(light2Topic);
-    client.subscribe(speedTopic);
+    //strcat(light1Topic, clientName);
+    //strcat(light2Topic, clientName);
+    //strcat(speedTopic, clientName);
     
+    //strcat(light1Topic, "/lights1");
+    //strcat(light2Topic, "/lights2");
+    //strcat(speedTopic, "/speed");
+
+
+    client.subscribe(light1Topic.c_str());
+    client.subscribe(light2Topic.c_str());
+    client.subscribe(speedTopic.c_str());
+    Serial.println(speedTopic);
     // Attach the motors to the input pins:
     driver.attachMotorA(inputA1, inputA2);
 }
@@ -94,11 +105,11 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   String topicString = String(topic);
 
-  if(topicString == (strcat(clientName, "/speed")))
+  if(topicString == speedTopic)
   {
     controlSpeed(pwmVal);
   }
-  else if(topicString == (strcat(clientName, "/lights1")))
+  else if(topicString == light1Topic)
   {
     controlLights(pwmVal);
   }
@@ -124,7 +135,7 @@ void controlLights(int value)
   Serial.println("control Lights function");
    if(value == 1)
    {
-      digitalWrite(15, HIGH); #d8
+      digitalWrite(15, HIGH); //d8
    }
    else if(value == 0)
    {
