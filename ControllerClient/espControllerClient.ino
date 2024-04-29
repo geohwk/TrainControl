@@ -84,24 +84,32 @@ void connectToWiFi() {
 }
 
 void removeEntry() {
-  /*if (!topics.empty()) {
+  if (!topics.empty()) {
     topics.erase(topics.begin() + currentTopicIndex);
     if (currentTopicIndex >= topics.size()) {
       currentTopicIndex = topics.size() - 1;
     }
-  }*/
-  Serial.println("Removed Client from Controller");
+  }
+  else{
+    Serial.println("No current clients connected, nothing to remove...");
+    return
+  }
+  Serial.println("Removed Client from Controller...");
 }
 
 void swapEntry() {
-  /*
-  currentTopicIndex++;
-  if (currentTopicIndex >= topics.size()) {
-    currentTopicIndex = 0;
+  if (topics.size() > 1){
+    currentTopicIndex++;
+    if (currentTopicIndex >= topics.size()) {
+      currentTopicIndex = 0;
+    }
+    Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str());
   }
-  Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str());
-  */
-  Serial.println("Swap Entry");
+  else{
+    Serial.println("Less than 2 clients connected, cannot go to next entry...");
+    return
+  }
+  
 }
 
 void lights1On(){
@@ -116,10 +124,12 @@ void lights1Off(){
 
 void lights2On(){
   Serial.println("Train command: Lights 2 On");
+  client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("1").c_str());
 }
 
 void lights2Off(){
   Serial.println("Train command: Lights 2 Off");
+  client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("0").c_str());
 }
 
 
@@ -150,12 +160,15 @@ void callback(char *topic, byte *payload, unsigned int length){
   //    clientName = clientName += payload[i];
   //}
   payload[length] = '\0';
-  String clientName = (char *)payload;
+  String newClientName = (char *)payload;
   
   
-  Serial.println(clientName);
+  Serial.println(newClientName);
   //Adding client to array
   topics.push_back(clientName);
+
+  Serial.println("Number of connected clients:")
+  Serial.println(topics.size())
 }
 
 int count=0;
