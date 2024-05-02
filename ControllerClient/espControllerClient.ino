@@ -145,11 +145,18 @@ void readSpeed(){
   if(digitalRead(rfPin) == HIGH){
     speedValue = (speedValue*-1);
   }
+
+  float curvedSpeedValue;
+  if(speedValue =< 5){
+    curvedSpeedValue = 5*speedValue;
+  }
+  else if(speedValue > 5){
+    curvedSpeedValue = ((75*speedValue)/95) + (2000/95);
+  }
     
-   
-  Serial.println(speedValue);
+  Serial.println(curvedSpeedValue);
   // Publish potentiometer value to the currently selected speed subtopic
-  client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(speedValue).c_str());
+  client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
 }
 
 //New Client connected
