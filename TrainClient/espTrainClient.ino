@@ -32,6 +32,8 @@ void setup()
 
     pinMode(2,OUTPUT);
     pinMode(14,OUTPUT);
+    //pinMode(5,OUTPUT);
+    //pinMode(4,OUTPUT);
     pinMode(15,OUTPUT);
     digitalWrite(15, LOW);
     connectToWiFi();
@@ -56,6 +58,15 @@ void setup()
     light1Topic = clientName + "/lights1";
     light2Topic = clientName + "/lights2";
     speedTopic = clientName + "/speed";
+
+    //strcat(light1Topic, clientName);
+    //strcat(light2Topic, clientName);
+    //strcat(speedTopic, clientName);
+    
+    //strcat(light1Topic, "/lights1");
+    //strcat(light2Topic, "/lights2");
+    //strcat(speedTopic, "/speed");
+
 
     client.subscribe(light1Topic.c_str());
     client.subscribe(light2Topic.c_str());
@@ -82,6 +93,12 @@ void callback(char *topic, byte *payload, unsigned int length)
 {
   Serial.print("Message arrived in topic: ");
   Serial.println(topic);
+  String pwmValue_str = "";
+  for (int i = 0; i < length; i++) 
+  {
+      Serial.print((char) payload[i]);
+      pwmValue_str = pwmValue_str += payload[i];
+  }
 
   payload[length] = '\0';
   int pwmVal = atoi((char *)payload);

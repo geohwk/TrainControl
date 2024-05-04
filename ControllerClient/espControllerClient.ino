@@ -92,7 +92,7 @@ void removeEntry() {
   }
   else{
     Serial.println("No current clients connected, nothing to remove...");
-    return
+    return;
   }
   Serial.println("Removed Client from Controller...");
 }
@@ -107,7 +107,7 @@ void swapEntry() {
   }
   else{
     Serial.println("Less than 2 clients connected, cannot go to next entry...");
-    return
+    return;
   }
   
 }
@@ -142,18 +142,21 @@ void readSpeed(){
   currentSpeed = potValue;
   float speedValue = (potValue/1023)*100;
 
-  if(digitalRead(rfPin) == HIGH){
-    speedValue = (speedValue*-1);
-  }
-
   float curvedSpeedValue;
-  if(speedValue =< 5){
+  if(speedValue <= 5){
     curvedSpeedValue = 5*speedValue;
   }
   else if(speedValue > 5){
     curvedSpeedValue = ((75*speedValue)/95) + (2000/95);
   }
-    
+
+  if(curvedSpeedValue < 5){
+    curvedSpeedValue = 0;
+  }
+  
+  if(digitalRead(rfPin) == HIGH){
+    curvedSpeedValue = (curvedSpeedValue*-1);
+  }
   Serial.println(curvedSpeedValue);
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
@@ -172,10 +175,10 @@ void callback(char *topic, byte *payload, unsigned int length){
   
   Serial.println(newClientName);
   //Adding client to array
-  topics.push_back(clientName);
+  topics.push_back(newClientName);
 
-  Serial.println("Number of connected clients:")
-  Serial.println(topics.size())
+  Serial.println("Number of connected clients:");
+  Serial.println(topics.size());
 }
 
 int count=0;
