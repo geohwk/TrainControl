@@ -96,7 +96,7 @@ void setup()
     display.setCursor(0,0);             // Start at top-left corner
     display.println(F("No Connected Trains"));
     display.display();
-    delay(2000)
+    delay(2000);
 
     // Connect to Pi Access Point
     connectToWiFi();
@@ -152,10 +152,8 @@ void removeEntry() {
     return;
   }
   Serial.println("Removed Client from Controller...");
-  
-  display.clearDisplay();
-  display.println(F(topics[currentTopicIndex]));
-  display.display();
+
+  showCurrentTopic();
 }
 
 void swapEntry() {
@@ -170,11 +168,21 @@ void swapEntry() {
     Serial.println("Less than 2 clients connected, cannot go to next entry...");
     return;
   }
+  showCurrentTopic();
+}
 
+void showCurrentTopic(){
   display.clearDisplay();
-  display.println(F(topics[currentTopicIndex]));
+  display.setCursor(0,0);
+  display.println((topics[currentTopicIndex]));
   display.display();
+}
 
+void showSpeed(speed){
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println((speed));
+  display.display();
 }
 
 void lights1On(){
@@ -225,6 +233,7 @@ void readSpeed(){
   Serial.println(curvedSpeedValue);
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
+  showSpeed(String(curvedSpeedValue))
 }
 
 //New Client connected
@@ -244,9 +253,11 @@ void callback(char *topic, byte *payload, unsigned int length){
 
   Serial.println("Number of connected clients:");
   Serial.println(topics.size());
+  showCurrentTopic();
 }
 
 int count=0;
+int count2=0;
 
 void loop() 
 {
@@ -257,6 +268,11 @@ void loop()
     }
     count=0;
   }
+  if(count2>100000){
+    showCurrentTopic();
+    count2=0;
+  }
+  count2++;
   count++;
 
   // Check button presses and perform corresponding actions
