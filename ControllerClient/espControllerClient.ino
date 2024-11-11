@@ -75,11 +75,21 @@ const int potentiometerPin = A0;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+const String clientName = "controller1";
+const String serialTopic = "serial_output";
+
 //Switch States
 bool RFcurrentState = false;
 bool lights1State = false;
 bool lights2State = false;
 float currentSpeed = 0;
+
+void MQTTSerialPrint(String text)
+{
+    client.publish((clientName + "/" + serialTopic).c_str(), String(text).c_str());
+    Serial.println(text);
+}
+
 void setup() 
 {
     Serial.begin(115200);
@@ -129,7 +139,7 @@ void setup()
       client_id += String(WiFi.macAddress());
       Serial.printf("The client %s connects to the public mqtt broker\n", client_id.c_str());
       if (client.connect(client_id.c_str(), "", "")) {
-          Serial.println("Public emqx mqtt broker connected");
+          MQTTSerialPrint("Public emqx mqtt broker connected")
       } else {
           Serial.print("failed with state ");
           Serial.print(client.state());
@@ -162,10 +172,10 @@ void removeEntry() {
     }
   }
   else{
-    Serial.println("No current clients connected, nothing to remove...");
+    MQTTSerialPrint("No current clients connected, nothing to remove...");
     return;
   }
-  Serial.println("Removed Client from Controller...");
+  MQTTSerialPrint("Removed Client from Controller...");
 
   showCurrentTopic();
 }
@@ -176,10 +186,10 @@ void swapEntry() {
     if (currentTopicIndex >= topics.size()) {
       currentTopicIndex = 0;
     }
-    Serial.println(("Swapped to new topic: " + topics[currentTopicIndex]).c_str());
+    MQTTSerialPrint(("Swapped to new topic: " + topics[currentTopicIndex]).c_str());
   }
   else{
-    Serial.println("Less than 2 clients connected, cannot go to next entry...");
+    MQTTSerialPrint("Less than 2 clients connected, cannot go to next entry...");
     return;
   }
   showCurrentTopic();
@@ -200,32 +210,32 @@ void showSpeed(speed){
 }
 
 void lights1On(){
-  Serial.println("Train command: Lights 1 On");
+  MQTTSerialPrint("Train command: Lights 1 On");
   client.publish((topics[currentTopicIndex] + "/lights1").c_str(), String("1").c_str());
 }
 
 void lights1Off(){
-  Serial.println("Train command: Lights 1 Off");
+  MQTTSerialPrint("Train command: Lights 1 Off");
   client.publish((topics[currentTopicIndex] + "/lights1").c_str(), String("0").c_str());
 }
 
 void lights2On(){
-  Serial.println("Train command: Lights 2 On");
+  MQTTSerialPrint("Train command: Lights 2 On");
   client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("1").c_str());
 }
 
 void lights2Off(){
-  Serial.println("Train command: Lights 2 Off");
+  MQTTSerialPrint("Train command: Lights 2 Off");
   client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("0").c_str());
 }
 
 void lights3On(){
-  Serial.println("Train command: Lights 3 On");
+  MQTTSerialPrint("Train command: Lights 3 On");
   client.publish((topics[currentTopicIndex] + "/lights3").c_str(), String("1").c_str());
 }
 
 void lights3Off(){
-  Serial.println("Train command: Lights 3 Off");
+  MQTTSerialPrint("Train command: Lights 3 Off");
   client.publish((topics[currentTopicIndex] + "/lights3").c_str(), String("0").c_str());
 }
 
@@ -254,7 +264,7 @@ void readSpeed(){
   if(digitalRead(rfPin) == HIGH){
     curvedSpeedValue = (curvedSpeedValue*-1);
   }
-  Serial.println(curvedSpeedValue);
+  MQTTSerialPrint(curvedSpeedValue);
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
   showSpeed(String(curvedSpeedValue))
@@ -262,7 +272,7 @@ void readSpeed(){
 
 //New Client connected
 void callback(char *topic, byte *payload, unsigned int length){
-  Serial.println("New Client Added to network:");
+  MQTTSerialPrint("New Client Added to network:");
   
   //for (int i = 0; i < length; i++) {
   //    clientName = clientName += payload[i];
@@ -271,12 +281,12 @@ void callback(char *topic, byte *payload, unsigned int length){
   String newClientName = (char *)payload;
   
   
-  Serial.println(newClientName);
+  MQTTSerialPrint(newClientName);
   //Adding client to array
   topics.push_back(newClientName);
 
-  Serial.println("Number of connected clients:");
-  Serial.println(topics.size());
+  MQTTSerialPrint("Number of connected clients:");
+  MQTTSerialPrint(topics.size());
   showCurrentTopic();
 }
 
