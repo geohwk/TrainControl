@@ -65,6 +65,7 @@ const int swapPin = 12; //D6
 const int rfPin = 13; //D7
 const int light1Pin = 15; //RX
 const int light2Pin = 16; //D0
+const int light3Pin = 0; //D3
 
 // Potentiometer pin
 const int potentiometerPin = A0;
@@ -207,6 +208,16 @@ void lights2On(){
 void lights2Off(){
   Serial.println("Train command: Lights 2 Off");
   client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("0").c_str());
+}
+
+void lights3On(){
+  Serial.println("Train command: Lights 3 On");
+  client.publish((topics[currentTopicIndex] + "/lights3").c_str(), String("1").c_str());
+}
+
+void lights3Off(){
+  Serial.println("Train command: Lights 3 Off");
+  client.publish((topics[currentTopicIndex] + "/lights3").c_str(), String("0").c_str());
 }
 
 
