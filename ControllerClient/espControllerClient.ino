@@ -96,7 +96,7 @@ void setup()
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);        // Draw white text
     display.setCursor(0,0);             // Start at top-left corner
-    display.println(F("No Connected Trains"));
+    display.println(F("Waiting to connect to AP..."));
     display.display();
     delay(2000);
 
@@ -104,6 +104,14 @@ void setup()
     while (connectToWiFi() == false){
       delay(2000);
     }
+    display.clearDisplay();
+    display.println(F("Connected to AP!"));
+    display.display();
+    delay(2000);
+
+    display.clearDisplay();
+    display.println(F("No Connected Trains..."));
+    display.display();
 
     // Initialize buttons as inputs
     pinMode(removePin, INPUT);
@@ -322,6 +330,16 @@ void loop()
   if ((digitalRead(light2Pin) == LOW) && (lights2State == true)){
     lights2Off();
     lights2State = false;
+    delay(200);
+  }
+  if ((digitalRead(light3Pin) == HIGH) && (lights3State == false)){
+    lights3On();
+    lights3State = true;
+    delay(200);
+  }
+  if ((digitalRead(light3Pin) == LOW) && (lights3State == true)){
+    lights3Off();
+    lights3State = false;
     delay(200);
   }
 
