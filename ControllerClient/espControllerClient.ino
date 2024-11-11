@@ -99,7 +99,9 @@ void setup()
     delay(2000);
 
     // Connect to Pi Access Point
-    connectToWiFi();
+    while (connectToWiFi() == false){
+      delay(2000);
+    }
 
     // Initialize buttons as inputs
     pinMode(removePin, INPUT);
@@ -135,8 +137,10 @@ void connectToWiFi() {
   if (WiFi.waitForConnectResult() == WL_CONNECTED) {
     Serial.print("Connected. IP: ");
     Serial.println(WiFi.localIP());
+    return true
   } else {
     Serial.println("Connection Failed!");
+    return false
   }
 }
 
