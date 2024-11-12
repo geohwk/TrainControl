@@ -66,7 +66,7 @@ const int swapPin = 12; //D6
 const int rfPin = 13; //D7
 const int light1Pin = 15; //RX
 const int light2Pin = 16; //D0
-const int light3Pin = 0; //D3
+const int light3Pin = 3; //D3
 
 // Potentiometer pin
 const int potentiometerPin = A0;
@@ -82,6 +82,7 @@ const String serialTopic = "serial_output";
 bool RFcurrentState = false;
 bool lights1State = false;
 bool lights2State = false;
+bool lights3State = false;
 float currentSpeed = 0;
 
 void MQTTSerialPrint(String text)
@@ -112,8 +113,10 @@ void setup()
 
     // Connect to Pi Access Point
     while (connectToWiFi() == false){
+      connectToWiFi();
       delay(2000);
     }
+    
     display.clearDisplay();
     display.println(F("Connected to AP!"));
     display.display();
@@ -139,7 +142,7 @@ void setup()
       client_id += String(WiFi.macAddress());
       Serial.printf("The client %s connects to the public mqtt broker\n", client_id.c_str());
       if (client.connect(client_id.c_str(), "", "")) {
-          MQTTSerialPrint("Public emqx mqtt broker connected")
+          MQTTSerialPrint("Public emqx mqtt broker connected");
       } else {
           Serial.print("failed with state ");
           Serial.print(client.state());
@@ -149,7 +152,7 @@ void setup()
     client.subscribe("newClient");
 }
 
-void connectToWiFi() {
+bool connectToWiFi() {
   Serial.printf("Connecting to '%s'\n", wifi_ssid);
 
   WiFi.mode(WIFI_STA);
@@ -157,10 +160,10 @@ void connectToWiFi() {
   if (WiFi.waitForConnectResult() == WL_CONNECTED) {
     Serial.print("Connected. IP: ");
     Serial.println(WiFi.localIP());
-    return true
+    return true;
   } else {
     Serial.println("Connection Failed!");
-    return false
+    return false;
   }
 }
 
@@ -202,7 +205,7 @@ void showCurrentTopic(){
   display.display();
 }
 
-void showSpeed(speed){
+void showSpeed(float speed){
   display.clearDisplay();
   display.setCursor(0,0);
   display.println((speed));
@@ -264,10 +267,10 @@ void readSpeed(){
   if(digitalRead(rfPin) == HIGH){
     curvedSpeedValue = (curvedSpeedValue*-1);
   }
-  MQTTSerialPrint(curvedSpeedValue);
+  MQTTSerialPrint(String(curvedSpeedValue));
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
-  showSpeed(String(curvedSpeedValue))
+  showSpeed(curvedSpeedValue);
 }
 
 //New Client connected
@@ -286,7 +289,7 @@ void callback(char *topic, byte *payload, unsigned int length){
   topics.push_back(newClientName);
 
   MQTTSerialPrint("Number of connected clients:");
-  MQTTSerialPrint(topics.size());
+  MQTTSerialPrint(String(topics.size()));
   showCurrentTopic();
 }
 
