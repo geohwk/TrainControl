@@ -61,12 +61,12 @@ int currentTopicIndex = 0; // Index of the currently selected topic
 
 // GPIO pins for buttons
 
-const int removePin = 14; //D5 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
-const int swapPin = 12; //D6
-const int rfPin = 13; //D7
-const int light1Pin = 15; //RX
-const int light2Pin = 16; //D0
-const int light3Pin = 3; //D3
+const int removePin = 0; //D5 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
+const int swapPin = 2; //D6
+const int rfPin = 3; //D7
+const int light1Pin = 14; //RX
+const int light2Pin = 12; //D0
+const int light3Pin =13; //D3
 
 // Potentiometer pin
 const int potentiometerPin = A0;
@@ -112,6 +112,7 @@ void setup()
     delay(2000);
 
     // Connect to Pi Access Point
+    
     while (connectToWiFi() == false){
       connectToWiFi();
       delay(2000);
@@ -127,12 +128,14 @@ void setup()
     display.display();
 
     // Initialize buttons as inputs
-    pinMode(removePin, INPUT);
-    pinMode(swapPin, INPUT);
+    pinMode(removePin, INPUT_PULLUP);
+    pinMode(swapPin, INPUT_PULLUP);
     pinMode(rfPin, INPUT);
     pinMode(light1Pin, INPUT);
     pinMode(light2Pin, INPUT);
+    pinMode(light3Pin, INPUT);
 
+    
     //Connect to MQTT broker
     client.setServer(mqtt_broker, mqtt_port);
     client.setCallback(callback);
@@ -150,6 +153,7 @@ void setup()
       }
     }
     client.subscribe("newClient");
+    
 }
 
 bool connectToWiFi() {
@@ -212,36 +216,10 @@ void showSpeed(float speed){
   display.display();
 }
 
-void lights1On(){
-  MQTTSerialPrint("Train command: Lights 1 On");
-  client.publish((topics[currentTopicIndex] + "/lights1").c_str(), String("1").c_str());
+void lightsControl(String topicText, int value){
+  MQTTSerialPrint("Train command: " + topicText + " On");
+  client.publish((topics[currentTopicIndex] + topicText).c_str(), String(value).c_str());
 }
-
-void lights1Off(){
-  MQTTSerialPrint("Train command: Lights 1 Off");
-  client.publish((topics[currentTopicIndex] + "/lights1").c_str(), String("0").c_str());
-}
-
-void lights2On(){
-  MQTTSerialPrint("Train command: Lights 2 On");
-  client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("1").c_str());
-}
-
-void lights2Off(){
-  MQTTSerialPrint("Train command: Lights 2 Off");
-  client.publish((topics[currentTopicIndex] + "/lights2").c_str(), String("0").c_str());
-}
-
-void lights3On(){
-  MQTTSerialPrint("Train command: Lights 3 On");
-  client.publish((topics[currentTopicIndex] + "/lights3").c_str(), String("1").c_str());
-}
-
-void lights3Off(){
-  MQTTSerialPrint("Train command: Lights 3 Off");
-  client.publish((topics[currentTopicIndex] + "/lights3").c_str(), String("0").c_str());
-}
-
 
 void readSpeed(){
   float potValue = analogRead(potentiometerPin);
@@ -283,13 +261,12 @@ void callback(char *topic, byte *payload, unsigned int length){
   payload[length] = '\0';
   String newClientName = (char *)payload;
   
-  
-  MQTTSerialPrint(newClientName);
   //Adding client to array
   topics.push_back(newClientName);
 
-  MQTTSerialPrint("Number of connected clients:");
-  MQTTSerialPrint(String(topics.size()));
+  MQTTSerialPrint(newClientName);
+  MQTTSerialPrint("Number of connected clients:" + String(topics.size()));
+
   showCurrentTopic();
 }
 
@@ -306,19 +283,23 @@ void loop()
     count=0;
   }
   if(count2>100000){
-    showCurrentTopic();
+    if(topics.size()>0){
+      showCurrentTopic();
+    }
     count2=0;
   }
   count2++;
   count++;
-
+  
   // Check button presses and perform corresponding actions
-  if (digitalRead(removePin) == HIGH) {
+  if (digitalRead(removePin) == LOW) {
+    //Serial.println("REMOVE");
     //Remove Entry
     removeEntry();
     delay(200);
   }
-  if (digitalRead(swapPin) == HIGH) {
+  if (digitalRead(swapPin) == LOW) {
+    //Serial.println("SWAP");
     //Swap Selected Entry
     swapEntry();
     delay(200);
@@ -326,32 +307,38 @@ void loop()
 
   //Lights
   if ((digitalRead(light1Pin) == HIGH) && (lights1State == false)) {
-    lights1On();
+    //Serial.println("LIGHT1 1");
+    lightsControl("/lights1", 1);
     lights1State = true;
     delay(200);
   }
   if ((digitalRead(light1Pin) == LOW) && (lights1State == true)){
-    lights1Off();
+    //Serial.println("LIGHT1 0");
+    lightsControl("/lights1", 0);
     lights1State = false;
     delay(200);
   }
   if ((digitalRead(light2Pin) == HIGH) && (lights2State == false)){
-    lights2On();
+    //Serial.println("LIGHT2 1");
+    lightsControl("/lights2", 1);
     lights2State = true;
     delay(200);
   }
   if ((digitalRead(light2Pin) == LOW) && (lights2State == true)){
-    lights2Off();
+    //Serial.println("LIGHT2 0");
+    lightsControl("/lights2", 0);
     lights2State = false;
     delay(200);
   }
   if ((digitalRead(light3Pin) == HIGH) && (lights3State == false)){
-    lights3On();
+    //Serial.println("LIGHT3 1");
+    lightsControl("/lights3", 1);
     lights3State = true;
     delay(200);
   }
   if ((digitalRead(light3Pin) == LOW) && (lights3State == true)){
-    lights3Off();
+    //Serial.println("LIGHT3 0");
+    lightsControl("/lights3", 0);
     lights3State = false;
     delay(200);
   }
