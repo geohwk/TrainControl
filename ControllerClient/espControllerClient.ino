@@ -1,5 +1,5 @@
-#include <PubSubClient.h>
 #include <ESP8266WiFi.h>
+#include <PubSubClient.h>
 #include <vector>
 #include <string>
 #include <SPI.h>
@@ -144,14 +144,15 @@ void setup()
       Serial.println("Attempting connection to MQTT Broker " + client_id);
       if (client.connect(client_id.c_str(), "", "")) {
           MQTTSerialPrint("Public emqx mqtt broker connected");
+          break;
       } else {
           Serial.println("failed with state " + String(client.state()));
           delay(2000);
       }
     }
+    //MQTTSerialPrint("1");
     client.subscribe("newClient");
-    
-    
+    //MQTTSerialPrint("2");
 }
 
 bool connectToWiFi() {
@@ -215,8 +216,9 @@ void showSpeed(float speed){
 }
 
 void lightsControl(String topicText, int value){
-  MQTTSerialPrint("Train command: " + topicText + value);
-  client.publish((topics[currentTopicIndex] + topicText).c_str(), String(value).c_str());
+  MQTTSerialPrint("Train command: " + topicText + ", " + value);
+  client.publish((String(topics[currentTopicIndex]) + topicText).c_str(), String(value).c_str());
+
 }
 
 void readSpeed(){
@@ -227,7 +229,7 @@ void readSpeed(){
   }
   currentSpeed = potValue;
   float speedValue = (potValue/1023)*100;
-
+  //MQTTSerialPrint(String(speedValue));
   float curvedSpeedValue;
   if(speedValue <= 5){
     curvedSpeedValue = 5*speedValue;
@@ -241,29 +243,49 @@ void readSpeed(){
   if(digitalRead(rfPin) == HIGH){
     curvedSpeedValue = (curvedSpeedValue*-1);
   }
-  MQTTSerialPrint(String(curvedSpeedValue));
+  //MQTTSerialPrint(String(curvedSpeedValue));
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
   showSpeed(curvedSpeedValue);
 }
 
 //New Client connected
-void callback(char *topic, byte *payload, unsigned int length){
-  MQTTSerialPrint("New Client Added to network:");
-  
-  //for (int i = 0; i < length; i++) {
-  //    clientName = clientName += payload[i];
-  //}
-  payload[length] = '\0';
-  String newClientName = (char *)payload;
-  
-  //Adding client to array
-  topics.push_back(newClientName);
+void callback(char* topic, byte* payload, unsigned int length){
+  /*MQTTSerialPrint("New Client Added to network:");
+  char* clientName;
 
-  MQTTSerialPrint(newClientName);
+  Serial.print("Payload: ");
+  for (int i = 0; i < length; i++) {
+      clientName = clientName += (char)payload[i];
+  }
+  Serial.println();
+  
+
+
+//  topics.push_back(newClientName);
+
+  MQTTSerialPrint(clientName);
+  MQTTSerialPrint("Number of connected clients:" + String(topics.size()));
+
+  showCurrentTopic();*/
+  String payloadString = "";
+
+  // Append each byte (converted to a character) to the String
+  for (int i = 0; i < length; i++) {
+    payloadString += (char)payload[i];  // Append the character to the String
+  }
+
+  // Now, you can use payloadString as needed
+  //Serial.print("Payload as string: ");
+  //Serial.println(payloadString);
+
+  topics.push_back(payloadString);
+
+  MQTTSerialPrint(payloadString);
   MQTTSerialPrint("Number of connected clients:" + String(topics.size()));
 
   showCurrentTopic();
+
 }
 
 int count=0;
@@ -271,7 +293,8 @@ int count2=0;
 
 void loop() 
 {
-  //client.loop();
+  //MQTTSerialPrint("3");
+  client.loop();
   if(count>10000){
     if(topics.size()>0){
       readSpeed();
@@ -302,37 +325,37 @@ void loop()
   }
 
   //Lights
-  if ((digitalRead(light1Pin) == LOW) && (lights1State == false)) {
+  if ((digitalRead(light1Pin) == LOW) && (lights1State == false) && (topics.size()>0)) {
     //Serial.println("LIGHT1 1");
     lightsControl("/lights1", 1);
     lights1State = true;
     delay(200);
   }
-  if ((digitalRead(light1Pin) == HIGH) && (lights1State == true)){
+  if ((digitalRead(light1Pin) == HIGH) && (lights1State == true) && (topics.size()>0)){
     //Serial.println("LIGHT1 0");
     lightsControl("/lights1", 0);
     lights1State = false;
     delay(200);
   }
-  if ((digitalRead(light2Pin) == LOW) && (lights2State == false)){
+  if ((digitalRead(light2Pin) == LOW) && (lights2State == false) && (topics.size()>0)){
     //Serial.println("LIGHT2 1");
     lightsControl("/lights2", 1);
     lights2State = true;
     delay(200);
   }
-  if ((digitalRead(light2Pin) == HIGH) && (lights2State == true)){
+  if ((digitalRead(light2Pin) == HIGH) && (lights2State == true) && (topics.size()>0)){
     //Serial.println("LIGHT2 0");
     lightsControl("/lights2", 0);
     lights2State = false;
     delay(200);
   }
-  if ((digitalRead(light3Pin) == LOW) && (lights3State == false)){
+  if ((digitalRead(light3Pin) == LOW) && (lights3State == false) && (topics.size()>0)){
     //Serial.println("LIGHT3 1");
     lightsControl("/lights3", 1);
     lights3State = true;
     delay(200);
   }
-  if ((digitalRead(light3Pin) == HIGH) && (lights3State == true)){
+  if ((digitalRead(light3Pin) == HIGH) && (lights3State == true) && (topics.size()>0)){
     //Serial.println("LIGHT3 0");
     lightsControl("/lights3", 0);
     lights3State = false;
