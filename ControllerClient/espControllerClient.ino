@@ -59,12 +59,12 @@ int currentTopicIndex = 0; // Index of the currently selected topic
 
 // GPIO pins for buttons
 
-const int removePin = 0; //D5 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
-const int swapPin = 2; //D6
-const int rfPin = 3; //D7
-const int light1Pin = 14; //RX
-const int light2Pin = 12; //D0
-const int light3Pin =13; //D3
+const int removePin = 0; //D3 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
+const int swapPin = 2; //D4
+const int rfPin = 3; //rx
+const int light1Pin = 14; //D5
+const int light2Pin = 12; //D6
+const int light3Pin =13; //D7
 
 // Potentiometer pin
 const int potentiometerPin = A0;
