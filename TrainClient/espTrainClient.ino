@@ -7,36 +7,53 @@
 DRV8833 driver = DRV8833();
 
 String clientName = "testTrain";
+const String serialTopic = "serial_output";
 
 // WiFi credentials
 char wifi_ssid[] = "TrainControl";
 char wifi_password[] = "ringousel";
 
-//const int inputA1 = 5, inputA2 = 4;//d4, d5
-const int inputA1 = 2, inputA2 = 14;
-
 char brokerUser[] = "";  // exp: myemail@mail.com
 char brokerPass[] = "";
 char mqtt_broker[] = "192.168.1.7";
 const int mqtt_port = 1883;
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
 String light1Topic;
 String light2Topic;
+String light3Topic;
 String speedTopic;
+
+const int MotorPin1 = 5; //D1 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
+const int MotorPin2 = 4; //D2
+
+const int light1Pin = 14; //D5
+const int light2Pin = 12; //D6
+const int light3Pin =13; //D7
+
+void MQTTSerialPrint(String text)
+{
+    //client.publish((clientName + "/" + serialTopic).c_str(), String(text).c_str());
+    Serial.println(text);
+}
 
 void setup() 
 {
     Serial.begin(115200);
 
-    pinMode(2,OUTPUT);
-    pinMode(14,OUTPUT);
-    //pinMode(5,OUTPUT);
-    //pinMode(4,OUTPUT);
-    pinMode(15,OUTPUT);
-    digitalWrite(15, LOW);
-    connectToWiFi();
+    pinMode(light1Pin, OUTPUT);
+    pinMode(light2Pin, OUTPUT);
+    pinMode(light3Pin, OUTPUT);
+    pinMode(MotorPin1, OUTPUT);
+    pinMode(MotorPin2, OUTPUT);
+
+    /*
+    while (connectToWiFi() == false){
+      connectToWiFi();
+      delay(2000);
+    }
     
     client.setServer(mqtt_broker, mqtt_port);
     client.setCallback(callback);
@@ -44,12 +61,11 @@ void setup()
     while (!client.connected()) {
       String client_id = "esp8266-client-";
       client_id += String(WiFi.macAddress());
-      Serial.printf("The client %s connects to the public mqtt broker\n", client_id.c_str());
+      Serial.println("Attempting connection to MQTT Broker " + client_id);
       if (client.connect(client_id.c_str(), "", "")) {
-          Serial.println("Public emqx mqtt broker connected");
+          MQTTSerialPrint("Public emqx mqtt broker connected");
       } else {
-          Serial.print("failed with state ");
-          Serial.print(client.state());
+          Serial.println("failed with state " + String(client.state()));
           delay(2000);
       }
     }
@@ -57,26 +73,20 @@ void setup()
     client.publish("newClient", clientName.c_str());
     light1Topic = clientName + "/lights1";
     light2Topic = clientName + "/lights2";
+    light3Topic = clientName + "/lights3";
     speedTopic = clientName + "/speed";
-
-    //strcat(light1Topic, clientName);
-    //strcat(light2Topic, clientName);
-    //strcat(speedTopic, clientName);
-    
-    //strcat(light1Topic, "/lights1");
-    //strcat(light2Topic, "/lights2");
-    //strcat(speedTopic, "/speed");
-
 
     client.subscribe(light1Topic.c_str());
     client.subscribe(light2Topic.c_str());
+    client.subscribe(light3Topic.c_str());
     client.subscribe(speedTopic.c_str());
     Serial.println(speedTopic);
+    */
     // Attach the motors to the input pins:
-    driver.attachMotorA(inputA1, inputA2);
+    driver.attachMotorA(MotorPin1, MotorPin2);
 }
 
-void connectToWiFi() {
+bool connectToWiFi() {
   Serial.printf("Connecting to '%s'\n", wifi_ssid);
 
   WiFi.mode(WIFI_STA);
@@ -84,8 +94,10 @@ void connectToWiFi() {
   if (WiFi.waitForConnectResult() == WL_CONNECTED) {
     Serial.print("Connected. IP: ");
     Serial.println(WiFi.localIP());
+    return true;
   } else {
     Serial.println("Connection Failed!");
+    return false;
   }
 }
 
@@ -111,7 +123,15 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
   else if(topicString == light1Topic)
   {
-    controlLights(pwmVal);
+    controlLights(pwmVal, light1Pin, 1);
+  }
+  else if(topicString == light2Topic)
+  {
+    controlLights(pwmVal, light2Pin, 2);
+  }
+  else if(topicString == light3Topic)
+  {
+    controlLights(pwmVal, light3Pin, 3);
   }
 }
 
@@ -130,16 +150,16 @@ void controlSpeed(int pwmVal)
    }
 }
 
-void controlLights(int value)
+void controlLights(int value, int pin, int topic)
 {
-  Serial.println("control Lights function");
+  Serial.println("Control Light " + String(topic) + ", Setting to " + String(value));
    if(value == 1)
    {
-      digitalWrite(15, HIGH); //d8
+      digitalWrite(pin, HIGH); //d8
    }
    else if(value == 0)
    {
-      digitalWrite(15, LOW);
+      digitalWrite(pin, LOW);
    }
 }
 
