@@ -43,8 +43,6 @@ static const unsigned char PROGMEM logo_bmp[] =
   0b00000000, 0b00000000,
   0b00000000, 0b00000000 };
 
-
-
 // WiFi credentials
 char wifi_ssid[] = "TrainControl";
 char wifi_password[] = "ringousel";
@@ -130,10 +128,10 @@ void setup()
     // Initialize buttons as inputs
     pinMode(removePin, INPUT_PULLUP);
     pinMode(swapPin, INPUT_PULLUP);
-    pinMode(rfPin, INPUT);
-    pinMode(light1Pin, INPUT);
-    pinMode(light2Pin, INPUT);
-    pinMode(light3Pin, INPUT);
+    pinMode(rfPin, INPUT_PULLUP);
+    pinMode(light1Pin, INPUT_PULLUP);
+    pinMode(light2Pin, INPUT_PULLUP);
+    pinMode(light3Pin, INPUT_PULLUP);
 
     
     //Connect to MQTT broker
@@ -152,6 +150,7 @@ void setup()
       }
     }
     client.subscribe("newClient");
+    
     
 }
 
@@ -216,7 +215,7 @@ void showSpeed(float speed){
 }
 
 void lightsControl(String topicText, int value){
-  MQTTSerialPrint("Train command: " + topicText + " On");
+  MQTTSerialPrint("Train command: " + topicText + value);
   client.publish((topics[currentTopicIndex] + topicText).c_str(), String(value).c_str());
 }
 
@@ -236,11 +235,9 @@ void readSpeed(){
   else if(speedValue > 5){
     curvedSpeedValue = ((75*speedValue)/95) + (2000/95);
   }
-
   if(curvedSpeedValue < 5){
     curvedSpeedValue = 0;
   }
-  
   if(digitalRead(rfPin) == HIGH){
     curvedSpeedValue = (curvedSpeedValue*-1);
   }
@@ -274,7 +271,7 @@ int count2=0;
 
 void loop() 
 {
-  client.loop();
+  //client.loop();
   if(count>10000){
     if(topics.size()>0){
       readSpeed();
@@ -305,37 +302,37 @@ void loop()
   }
 
   //Lights
-  if ((digitalRead(light1Pin) == HIGH) && (lights1State == false)) {
+  if ((digitalRead(light1Pin) == LOW) && (lights1State == false)) {
     //Serial.println("LIGHT1 1");
     lightsControl("/lights1", 1);
     lights1State = true;
     delay(200);
   }
-  if ((digitalRead(light1Pin) == LOW) && (lights1State == true)){
+  if ((digitalRead(light1Pin) == HIGH) && (lights1State == true)){
     //Serial.println("LIGHT1 0");
     lightsControl("/lights1", 0);
     lights1State = false;
     delay(200);
   }
-  if ((digitalRead(light2Pin) == HIGH) && (lights2State == false)){
+  if ((digitalRead(light2Pin) == LOW) && (lights2State == false)){
     //Serial.println("LIGHT2 1");
     lightsControl("/lights2", 1);
     lights2State = true;
     delay(200);
   }
-  if ((digitalRead(light2Pin) == LOW) && (lights2State == true)){
+  if ((digitalRead(light2Pin) == HIGH) && (lights2State == true)){
     //Serial.println("LIGHT2 0");
     lightsControl("/lights2", 0);
     lights2State = false;
     delay(200);
   }
-  if ((digitalRead(light3Pin) == HIGH) && (lights3State == false)){
+  if ((digitalRead(light3Pin) == LOW) && (lights3State == false)){
     //Serial.println("LIGHT3 1");
     lightsControl("/lights3", 1);
     lights3State = true;
     delay(200);
   }
-  if ((digitalRead(light3Pin) == LOW) && (lights3State == true)){
+  if ((digitalRead(light3Pin) == HIGH) && (lights3State == true)){
     //Serial.println("LIGHT3 0");
     lightsControl("/lights3", 0);
     lights3State = false;
