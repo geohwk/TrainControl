@@ -49,7 +49,7 @@ void setup()
     pinMode(MotorPin1, OUTPUT);
     pinMode(MotorPin2, OUTPUT);
 
-    /*
+    
     while (connectToWiFi() == false){
       connectToWiFi();
       delay(2000);
@@ -81,7 +81,7 @@ void setup()
     client.subscribe(light3Topic.c_str());
     client.subscribe(speedTopic.c_str());
     Serial.println(speedTopic);
-    */
+    
     // Attach the motors to the input pins:
     driver.attachMotorA(MotorPin1, MotorPin2);
 }
