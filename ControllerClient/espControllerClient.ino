@@ -117,11 +117,13 @@ void setup()
     }
     
     display.clearDisplay();
+    display.setCursor(0,0);
     display.println(F("Connected to AP!"));
     display.display();
     delay(2000);
 
     display.clearDisplay();
+    display.setCursor(0,0);
     display.println(F("No Connected Trains..."));
     display.display();
 
