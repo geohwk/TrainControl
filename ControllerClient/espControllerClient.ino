@@ -206,7 +206,12 @@ void swapEntry() {
 void showCurrentTopic(){
   display.clearDisplay();
   display.setCursor(0,0);
-  display.println((topics[currentTopicIndex]));
+  if(topics.size()>0){
+    display.println(F("No Connected Trains..."));
+  }
+  else{
+    display.println((topics[currentTopicIndex]));
+  }
   display.display();
 }
 
