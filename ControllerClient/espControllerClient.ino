@@ -307,6 +307,7 @@ void loop()
       readSpeed();
     }
     count=0;
+    count2=0;
   }
   if(count2>100000){
     if(topics.size()>0){
