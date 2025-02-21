@@ -83,6 +83,56 @@ bool lights2State = false;
 bool lights3State = false;
 float currentSpeed = 0;
 
+void drawCenteredText(String text, int y) {
+    int16_t x1, y1;
+    uint16_t textWidth, textHeight;
+
+    display.getTextBounds(text, 0, y, &x1, &y1, &textWidth, &textHeight);
+    int x = (SCREEN_WIDTH - textWidth) / 2;  // Center X position
+
+    display.setCursor(x, y);
+    display.println(text);
+}
+
+// Function to wrap and vertically/horizontally center text
+void drawWrappedText(String text) {
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+
+    int lineHeight = 10;  // Adjust based on font size
+    int maxWidth = SCREEN_WIDTH - 2;  // Prevent edge clipping
+
+    String lines[3];  // OLED 128x32 fits ~3 lines
+    int lineCount = 0;
+
+    String line = "";
+    for (int i = 0; i < text.length(); i++) {
+        line += text[i];
+
+        int16_t x1, y1;
+        uint16_t lineWidth, lineHeightDummy;
+        display.getTextBounds(line, 0, 0, &x1, &y1, &lineWidth, &lineHeightDummy);
+
+        if (lineWidth > maxWidth || text[i] == '\n') {
+            if (lineWidth > maxWidth) line.remove(line.length() - 1);  // Remove last char if too long
+            if (lineCount < 3) lines[lineCount++] = line;  // Store wrapped line
+            line = "";
+            i--;  // Reprocess last char in new line
+        }
+    }
+
+    if (line.length() > 0 && lineCount < 3) lines[lineCount++] = line;  // Store last line
+
+    // Calculate starting Y position for vertical centering
+    int totalTextHeight = lineCount * lineHeight;
+    int startY = (SCREEN_HEIGHT - totalTextHeight) / 2;  // Center vertically
+
+    // Draw all lines centered
+    for (int i = 0; i < lineCount; i++) {
+        drawCenteredText(lines[i], startY + (i * lineHeight));
+    }
+}
+
 void MQTTSerialPrint(String text)
 {
     client.publish((clientName + "/" + serialTopic).c_str(), String(text).c_str());
@@ -104,8 +154,7 @@ void setup()
 
     display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);        // Draw white text
-    display.setCursor(0,0);             // Start at top-left corner
-    display.println(F("Waiting to connect to AP..."));
+    drawWrappedText("Waiting to connect to AP...");
     display.display();
     delay(2000);
 
@@ -117,14 +166,12 @@ void setup()
     }
     
     display.clearDisplay();
-    display.setCursor(0,0);
-    display.println(F("Connected to AP!"));
+    drawWrappedText("Connected to AP!");
     display.display();
     delay(2000);
 
     display.clearDisplay();
-    display.setCursor(0,0);
-    display.println(F("No Connected Trains..."));
+    drawWrappedText("No Connected Trains!");
     display.display();
 
     // Initialize buttons as inputs
@@ -177,6 +224,9 @@ void removeEntry() {
     topics.erase(topics.begin() + currentTopicIndex);
     if (currentTopicIndex >= topics.size()) {
       currentTopicIndex = topics.size() - 1;
+      if(currentTopicIndex < 0){
+        currentTopicIndex = 0;
+      }
     }
   }
   else{
@@ -205,20 +255,18 @@ void swapEntry() {
 
 void showCurrentTopic(){
   display.clearDisplay();
-  display.setCursor(0,0);
-  if(topics.size()>0){
-    display.println(F("No Connected Trains..."));
+  if(topics.size()==0){
+    drawWrappedText("No Connected Trains!");
   }
   else{
-    display.println((topics[currentTopicIndex]));
+    drawWrappedText(topics[currentTopicIndex]);
   }
   display.display();
 }
 
 void showSpeed(float speed){
   display.clearDisplay();
-  display.setCursor(0,0);
-  display.println((speed));
+  drawWrappedText(String(speed));
   display.display();
 }
 
@@ -228,11 +276,11 @@ void lightsControl(String topicText, int value){
 
 }
 
-void readSpeed(){
+int readSpeed(int count2){
   float potValue = analogRead(potentiometerPin);
 
   if(abs(potValue-currentSpeed)<5){
-    return;
+    return count2;
   }
   currentSpeed = potValue;
   float speedValue = (potValue/1023)*100;
@@ -254,6 +302,7 @@ void readSpeed(){
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
   showSpeed(curvedSpeedValue);
+  return 0;
 }
 
 //New Client connected
@@ -304,10 +353,10 @@ void loop()
   client.loop();
   if(count>10000){
     if(topics.size()>0){
-      readSpeed();
+      count2=readSpeed(count2);
     }
     count=0;
-    count2=0;
+    
   }
   if(count2>100000){
     if(topics.size()>0){
