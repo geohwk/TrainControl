@@ -137,11 +137,12 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 void controlSpeed(int pwmVal)
 {
-   int output = int(float((float(float(pwmVal)/100)*1023)));
+   int output = int(float((float(float(pwmVal)/100)*255)));
    Serial.println("control Speed function");
    if(output < 0)
    {
       output = abs(output);
+      Serial.println(String(output));
       driver.motorAReverse(output);
    }
    else
