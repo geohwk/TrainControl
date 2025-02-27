@@ -29,8 +29,8 @@ String speedTopic;
 const int MotorPin1 = 5; //D1 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
 const int MotorPin2 = 4; //D2
 
-const int light1Pin = 14; //D5
-const int light2Pin = 12; //D6
+const int light1Pin = 12; //D6
+const int light2Pin = 14; //D5
 const int light3Pin =13; //D7
 
 void MQTTSerialPrint(String text)
