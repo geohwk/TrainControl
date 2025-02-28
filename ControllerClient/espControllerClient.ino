@@ -271,8 +271,8 @@ void showCurrentTopic(){
   }
   
   // Draw the line under the selected client
-  int xPos = currentTopicIndex * 12;  // Each number is roughly 12px wide, adjust as needed
-  display.drawLine(xPos, 10, xPos + 12, 10, SSD1306_WHITE); // Draw a line under the selected client
+  int xPos = 2 + currentTopicIndex * 12;  // Each number is roughly 12px wide, adjust as needed
+  display.drawLine(xPos, 12, xPos + 12, 12, SSD1306_WHITE); // Draw a line under the selected client
 
   display.display();
 }
