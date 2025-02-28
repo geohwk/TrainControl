@@ -298,6 +298,10 @@ int readSpeed(int count2){
   if(digitalRead(rfPin) == HIGH){
     curvedSpeedValue = (curvedSpeedValue*-1);
   }
+
+  //Flip curved speed to match hardware position
+  curvedSpeedValue = (curvedSpeedValue*-1);
+  
   //MQTTSerialPrint(String(curvedSpeedValue));
   // Publish potentiometer value to the currently selected speed subtopic
   client.publish((topics[currentTopicIndex] + "/speed").c_str(), String(curvedSpeedValue).c_str());
@@ -384,37 +388,37 @@ void loop()
   //Lights
   if ((digitalRead(light1Pin) == LOW) && (lights1State == false) && (topics.size()>0)) {
     //Serial.println("LIGHT1 1");
-    lightsControl("/lights1", 1);
+    lightsControl("/lights1", 0); //Flipped Lights value to match hardware position
     lights1State = true;
     delay(200);
   }
   if ((digitalRead(light1Pin) == HIGH) && (lights1State == true) && (topics.size()>0)){
     //Serial.println("LIGHT1 0");
-    lightsControl("/lights1", 0);
+    lightsControl("/lights1", 1); //Flipped Lights value to match hardware position
     lights1State = false;
     delay(200);
   }
   if ((digitalRead(light2Pin) == LOW) && (lights2State == false) && (topics.size()>0)){
     //Serial.println("LIGHT2 1");
-    lightsControl("/lights2", 1);
+    lightsControl("/lights2", 0); //Flipped Lights value to match hardware position
     lights2State = true;
     delay(200);
   }
   if ((digitalRead(light2Pin) == HIGH) && (lights2State == true) && (topics.size()>0)){
     //Serial.println("LIGHT2 0");
-    lightsControl("/lights2", 0);
+    lightsControl("/lights2", 1); //Flipped Lights value to match hardware position
     lights2State = false;
     delay(200);
   }
   if ((digitalRead(light3Pin) == LOW) && (lights3State == false) && (topics.size()>0)){
     //Serial.println("LIGHT3 1");
-    lightsControl("/lights3", 1);
+    lightsControl("/lights3", 0); //Flipped Lights value to match hardware position
     lights3State = true;
     delay(200);
   }
   if ((digitalRead(light3Pin) == HIGH) && (lights3State == true) && (topics.size()>0)){
     //Serial.println("LIGHT3 0");
-    lightsControl("/lights3", 0);
+    lightsControl("/lights3", 1); //Flipped Lights value to match hardware position
     lights3State = false;
     delay(200);
   }
