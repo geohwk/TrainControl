@@ -261,6 +261,10 @@ void showCurrentTopic(){
   else{
     drawWrappedText(topics[currentTopicIndex]);
   }
+  
+  display.setCursor(3,3);
+  display.println(String(topics.size()));
+
   display.display();
 }
 
