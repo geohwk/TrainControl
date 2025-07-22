@@ -6,7 +6,7 @@
 
 DRV8833 driver = DRV8833();
 
-String clientName = "testTrain";
+String clientName = "Train 2";
 const String serialTopic = "serial_output";
 
 // WiFi credentials
@@ -29,8 +29,8 @@ String speedTopic;
 const int MotorPin1 = 5; //D1 https://randomnerdtutorials.com/esp8266-pinout-reference-gpios/
 const int MotorPin2 = 4; //D2
 
-const int light1Pin = 12; //D6
-const int light2Pin = 14; //D5
+const int light1Pin = 14; //D5
+const int light2Pin = 12; //D6
 const int light3Pin =13; //D7
 
 void MQTTSerialPrint(String text)
@@ -42,7 +42,7 @@ void MQTTSerialPrint(String text)
 void setup() 
 {
     Serial.begin(115200);
-
+    analogWriteFreq(15000);
     pinMode(light1Pin, OUTPUT);
     pinMode(light2Pin, OUTPUT);
     pinMode(light3Pin, OUTPUT);
@@ -103,7 +103,7 @@ bool connectToWiFi() {
 
 void callback(char *topic, byte *payload, unsigned int length) 
 {
-  Serial.print("Message arrived in topic: ");
+  Serial.println("Message arrived in topic: ");
   Serial.println(topic);
   String pwmValue_str = "";
   for (int i = 0; i < length; i++) 
@@ -137,12 +137,16 @@ void callback(char *topic, byte *payload, unsigned int length)
 
 void controlSpeed(int pwmVal)
 {
-   int output = int(float((float(float(pwmVal)/100)*255)));
-   Serial.println("control Speed function");
-   if(output < 0)
+  double normalized = double(abs(pwmVal))/100;
+  float curved = pow(double(normalized), 0.4);
+  //Serial.println(String(curved));
+
+  int output = int(curved*255);
+  Serial.println("control Speed function:");
+  //Serial.println(String(output));
+  Serial.println(String(output));
+   if(pwmVal < 0)
    {
-      output = abs(output);
-      Serial.println(String(output));
       driver.motorAReverse(output);
    }
    else
