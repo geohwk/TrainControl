@@ -265,13 +265,13 @@ void showCurrentTopic(){
   display.setCursor(4, 1);
   
   // Draw the connected clients
-  for (int i = 0; i < totalClients; i++) {
-    display.print(numClients[i]);
+  for (int i = 0; i < topics.size(); i++) {
+    display.print(i+1);
     display.print(" ");
   }
   
   // Draw the line under the selected client
-  int xPos = 2 + ((currentTopicIndex-1)) * 12;  // Each number is roughly 12px wide, adjust as needed
+  int xPos = 2 + ((currentTopicIndex)) * 12;  // Each number is roughly 12px wide, adjust as needed
   display.drawLine(xPos, 9, xPos + 8, 9, SSD1306_WHITE); // Draw a line under the selected client
 
   display.display();
